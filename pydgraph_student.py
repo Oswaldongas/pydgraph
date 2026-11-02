@@ -30,12 +30,33 @@ def create_schema():
     """
 
     schema = """
+        name: string @index(term) .
+        price: float  @index(float) .
+        category: string @index(term) .
+
+        supplier_name: string @index(term) .
+        location: geo .
+
+        supplies: [uid] @reverse .
+
+        type Product{
+            name
+            price
+            category
+        }
+
+        type Supplier{
+            supplier_name
+            location    
+        }
     """
 
     # TODO: aplicar schema
     # agregar código para poder cargar el schema
+    op = pydgraph.Operation(schema=schema)
+    client.alter(op)
 
-    pass
+    
 
 
 # ------------------------
