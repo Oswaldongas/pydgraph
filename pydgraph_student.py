@@ -68,6 +68,8 @@ def drop_all():
     if confirm.lower() == "s":
         # TODO:
         # agregar el código para poder borrar todo el schema y los datos
+        op = pydgraph.Operation(drop_all=True)
+        client.alter(op)
         print("Grafo eliminado completamente")
     else:
         print("Operación cancelada")
