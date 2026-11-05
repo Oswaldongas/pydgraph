@@ -89,10 +89,12 @@ def parse_location(location_str):
 
     # TODO:
     # 1. separar string por coma
+    tupla = location_str.strip().split(",")
     # 2. convertir a float
+    tupla = [float(x) for x in tupla]
     # 3. regresar diccionario
 
-    pass
+    return {"type": "Point", "coordinates": tupla}
 
 
 # ------------------------
@@ -224,10 +226,21 @@ def query_products_by_price():
     price = input("Precio mínimo: ")
 
     query = """
-    
+        query q($price: float) {
+            p(func: type(Product)) @filter(ge(price, $price)) {
+                name
+                price
+                category
+                ~supplies {
+                    supplier_name
+                    location
+                }
+        }
     """
 
     # TODO: ejecutar query
+    res = client.txn(read_only=True).query(query, variables={'$price': float(price)})
+    print(json.dumps(json.loads(res.json), indent=2))
 
 
 # 3. Productos por categoría (con suppliers)
@@ -235,10 +248,22 @@ def query_products_by_category():
     category = input("Categoría: ")
 
     query = """
-
+        query q($category: string) {
+            p(func: type(Product)) @filter(anyofterms(category, $category)) {
+                name
+                price
+                category
+                ~supplies {
+                    supplier_name
+                    location
+                }
+            }
+        }
     """
 
     # TODO: ejecutar query
+    res = client.txn(read_only=True).query(query, variables={'$category': category})
+    print(json.dumps(json.loads(res.json), indent=2))
 
 
 # 4. Suppliers con sus productos
@@ -246,11 +271,22 @@ def query_suppliers_with_products():
     supplier = input("Nombre del proveedor: ")
 
     query = """
-    
+        query q($supplier: string) {
+            s(func: type(Supplier)) @filter(anyofterms(supplier_name, $supplier)) {
+                supplier_name
+                location
+                supplies {
+                    name
+                    price
+                    category
+                }
+            }
+        }
     """
 
     # TODO: ejecutar query
-
+    res = client.txn(read_only=True).query(query, variables={'$supplier': supplier})
+    print(json.dumps(json.loads(res.json), indent=2))
 
 # ------------------------
 # MENU
@@ -272,8 +308,9 @@ def menu():
 
         elif option == "2":
             # TODO: llama las funciones para cargar los productos,
-            # los suppliers y luego la función para crear las relaciones
-            pass
+            product_uids = load_products()
+            supplier_uids = load_suppliers()
+            create_edges(product_uids, supplier_uids)
 
         elif option == "3":
             print("\n--- QUERIES ---")
