@@ -226,20 +226,20 @@ def query_products_by_price():
     price = input("Precio mínimo: ")
 
     query = """
-        query q($price: float) {
-            p(func: type(Product)) @filter(ge(price, $price)) {
-                name
-                price
-                category
-                ~supplies {
-                    supplier_name
-                    location
-                }
+    query q($price: float) {
+        p(func: ge(price, $price)) @filter(type(Product)) {
+            name
+            price
+            category
+            ~supplies {
+                supplier_name
+                location
+            }
         }
+    }
     """
 
-    # TODO: ejecutar query
-    res = client.txn(read_only=True).query(query, variables={'$price': float(price)})
+    res = client.txn(read_only=True).query(query, variables={'$price': str(price)})
     print(json.dumps(json.loads(res.json), indent=2))
 
 
